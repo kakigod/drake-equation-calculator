@@ -1,435 +1,139 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Интерактивное уравнение Дрейка</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-histogram@latest/dist/chartjs-chart-histogram.min.js"></script>
+    <title>Уравнение Дрейка - Просмотр кода</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
             color: #333;
         }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .chart-container {
-            flex: 1;
-            min-width: 500px;
-            height: 400px;
-        }
-        .controls {
-            flex: 1;
-            min-width: 300px;
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .param-control {
-            margin-bottom: 15px;
-        }
-        .param-control label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .param-control input {
-            width: 100%;
-        }
-        .param-value {
-            font-size: 0.9em;
-            color: #666;
-        }
-        .results {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e9f7ef;
-            border-radius: 8px;
-        }
-        h1, h2 {
+        h1 {
             color: #2c3e50;
+            text-align: center;
         }
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
+        .code-container {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
         }
-        button:hover {
-            background: #2980b9;
+        .note {
+            background: #fffde7;
+            padding: 15px;
+            border-left: 4px solid #ffd600;
+            margin: 20px 0;
+        }
+        .output {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            white-space: pre-wrap;
         }
     </style>
 </head>
 <body>
-    <h1>Интерактивное уравнение Дрейка</h1>
-    <p>Используйте ползунки для изменения параметров уравнения Дрейка и наблюдайте, как меняется вероятность обнаружения разумной жизни в нашей галактике.</p>
+    <h1>Код уравнения Дрейка на Python</h1>
     
-    <div class="container">
-        <div class="chart-container">
-            <canvas id="civChart"></canvas>
-        </div>
-        <div class="chart-container">
-            <canvas id="contactChart"></canvas>
-        </div>
+    <div class="note">
+        <strong>Примечание:</strong> Этот HTML-файл только отображает код Python с подсветкой синтаксиса. 
+        Для выполнения кода вам нужно использовать среду выполнения Python (Jupyter Notebook, IDE и т.д.).
     </div>
     
-    <div class="controls">
-        <h2>Параметры уравнения Дрейка</h2>
-        
-        <div class="param-control">
-            <label for="R_star">R* - Скорость звёздообразования (звёзд/год)</label>
-            <input type="range" id="R_star_min" min="0.1" max="10" step="0.1" value="1.5">
-            <input type="range" id="R_star_max" min="0.1" max="10" step="0.1" value="3.0">
-            <div class="param-value">Диапазон: <span id="R_star_value">1.5 - 3.0</span></div>
-        </div>
-        
-        <div class="param-control">
-            <label for="f_p">f<sub>p</sub> - Доля звёзд с планетами</label>
-            <input type="range" id="f_p_min" min="0" max="1" step="0.01" value="0.9">
-            <input type="range" id="f_p_max" min="0" max="1" step="0.01" value="1.0">
-            <div class="param-value">Диапазон: <span id="f_p_value">0.9 - 1.0</span></div>
-        </div>
-        
-        <div class="param-control">
-            <label for="n_e">n<sub>e</sub> - Планеты в зоне жизни</label>
-            <input type="range" id="n_e_min" min="0" max="1" step="0.01" value="0.2">
-            <input type="range" id="n_e_max" min="0" max="1" step="0.01" value="0.5">
-            <div class="param-value">Диапазон: <span id="n_e_value">0.2 - 0.5</span></div>
-        </div>
-        
-        <div class="param-control">
-            <label for="f_l">f<sub>l</sub> - Вероятность жизни</label>
-            <input type="range" id="f_l_min" min="0" max="1" step="0.01" value="0.1">
-            <input type="range" id="f_l_max" min="0" max="1" step="0.01" value="0.5">
-            <div class="param-value">Диапазон: <span id="f_l_value">0.1 - 0.5</span></div>
-        </div>
-        
-        <div class="param-control">
-            <label for="f_i">f<sub>i</sub> - Вероятность разума</label>
-            <input type="range" id="f_i_min" min="0" max="1" step="0.01" value="0.01">
-            <input type="range" id="f_i_max" min="0" max="1" step="0.01" value="0.2">
-            <div class="param-value">Диапазон: <span id="f_i_value">0.01 - 0.2</span></div>
-        </div>
-        
-        <div class="param-control">
-            <label for="f_c">f<sub>c</sub> - Вероятность технологий</label>
-            <input type="range" id="f_c_min" min="0" max="1" step="0.01" value="0.1">
-            <input type="range" id="f_c_max" min="0" max="1" step="0.01" value="0.5">
-            <div class="param-value">Диапазон: <span id="f_c_value">0.1 - 0.5</span></div>
-        </div>
-        
-        <div class="param-control">
-            <label for="L">L - Время жизни цивилизации (лет)</label>
-            <input type="range" id="L_min" min="10" max="10000" step="10" value="100">
-            <input type="range" id="L_max" min="10" max="10000" step="10" value="1000">
-            <div class="param-value">Диапазон: <span id="L_value">100 - 1000</span></div>
-        </div>
-        
-        <div class="param-control">
-            <label for="f_detect">f<sub>detect</sub> - Доля обнаруживаемых цивилизаций</label>
-            <input type="range" id="f_detect_min" min="0" max="1" step="0.01" value="0.01">
-            <input type="range" id="f_detect_max" min="0" max="1" step="0.01" value="0.1">
-            <div class="param-value">Диапазон: <span id="f_detect_value">0.01 - 0.1</span></div>
-        </div>
-        
-        <div class="param-control">
-            <label for="T_galaxy">T<sub>galaxy</sub> - Время наблюдения (лет)</label>
-            <input type="range" id="T_galaxy" min="1000" max="1000000" step="1000" value="100000">
-            <div class="param-value">Значение: <span id="T_galaxy_value">100,000</span></div>
-        </div>
-        
-        <button id="updateBtn">Обновить расчеты</button>
-        
-        <div class="results">
-            <h3>Результаты:</h3>
-            <p><strong>Число цивилизаций (N):</strong> <span id="median_N">-</span> (медиана)</p>
-            <p><strong>Вероятность контакта:</strong> <span id="median_p">-</span> (медиана)</p>
-            <p><strong>Общая вероятность контакта:</strong> <span id="p_total">-</span></p>
-        </div>
-    </div>
+    <div class="code-container">
+        <pre><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
 
-    <script>
-        // Инициализация графиков
-        const civCtx = document.getElementById('civChart').getContext('2d');
-        const contactCtx = document.getElementById('contactChart').getContext('2d');
+params = {
+    "R_star": [1.5, 3.0],     # Скорость звёздообразования (звёзд/год)
+    "f_p": [0.9, 1.0],         # Доля звёзд с планетами
+    "n_e": [0.2, 0.5],         # Планеты в зоне жизни
+    "f_l": [0.1, 0.5],         # Вероятность жизни
+    "f_i": [0.01, 0.2],        # Вероятность разума
+    "f_c": [0.1, 0.5],         # Вероятность технологий
+    "L": [100, 1000],          # Время жизни цивилизации (лет)
+    "f_detect": [0.01, 0.1],   # Доля цивилизаций, чьи сигналы можно обнаружить
+    "T_galaxy": 1e5            # Время наблюдения (лет)
+}
+
+def simulate_contact(params, samples=10000):
+    N_civ = []
+    p_contact = []
+    galaxy_radius = 50000  # Радиус Галактики в световых годах
+    
+    for _ in range(samples):
+        R = np.random.uniform(*params["R_star"])
+        fp = np.random.uniform(*params["f_p"])
+        ne = np.random.uniform(*params["n_e"])
+        fl = np.random.uniform(*params["f_l"])
+        fi = np.random.uniform(*params["f_i"])
+        fc = np.random.uniform(*params["f_c"])
+        L = np.random.uniform(*params["L"])
+        f_detect = np.random.uniform(*params["f_detect"])
         
-        let civChart = new Chart(civCtx, {
-            type: 'bar',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Число разумных цивилизаций (N)',
-                    data: [],
-                    backgroundColor: 'rgba(135, 206, 235, 0.7)',
-                    borderColor: 'rgba(0, 0, 0, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: { 
-                    y: { 
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Частота'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Число цивилизаций'
-                        }
-                    }
-                },
-                plugins: {
-                    title: { 
-                        display: true, 
-                        text: 'Распределение оценок уравнения Дрейка',
-                        font: {
-                            size: 16
-                        }
-                    },
-                    legend: { display: false }
-                }
-            }
-        });
+        N = R * fp * ne * fl * fi * fc * L
+        N_civ.append(N)
         
-        let contactChart = new Chart(contactCtx, {
-            type: 'bar',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Вероятность контакта с одной цивилизацией',
-                    data: [],
-                    backgroundColor: 'rgba(250, 128, 114, 0.7)',
-                    borderColor: 'rgba(0, 0, 0, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: { 
-                    y: { 
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Частота'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Вероятность контакта'
-                        }
-                    }
-                },
-                plugins: {
-                    title: { 
-                        display: true, 
-                        text: 'Вероятность обнаружения сигнатуры',
-                        font: {
-                            size: 16
-                        }
-                    },
-                    legend: { display: false }
-                }
-            }
-        });
+        active_now = (np.random.random() < L / params["T_galaxy"])
+        distance = np.random.uniform(0, galaxy_radius)
+        distance_factor = np.exp(-distance / galaxy_radius)
+        p = f_detect * distance_factor if active_now else 0
+        p_contact.append(p)
+    
+    return N_civ, p_contact
+
+N_civ, p_contact = simulate_contact(params)
+
+# Статистика
+median_N = np.median(N_civ)
+median_p = np.median(p_contact)
+p_total = 1 - np.prod([1 - p for p in p_contact])
+
+# Визуализация (только медиана)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+# График числа цивилизаций
+ax1.hist(N_civ, bins=50, color='skyblue', edgecolor='black', alpha=0.7)
+ax1.axvline(median_N, color='red', linestyle='--', label=f'Медиана: {median_N:.1f}')
+ax1.set_xlabel('Число разумных цивилизаций (N)')
+ax1.set_ylabel('Частота')
+ax1.set_title('Распределение оценок уравнения Дрейка')
+ax1.legend()
+
+# График вероятности контакта
+ax2.hist(p_contact, bins=50, color='salmon', edgecolor='black', alpha=0.7)
+ax2.axvline(median_p, color='red', linestyle='--', label=f'Медиана: {median_p:.6f}')
+ax2.set_xlabel('Вероятность контакта с одной цивилизацией')
+ax2.set_title('Вероятность обнаружения сигнатуры')
+ax2.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Вывод статистики (только медиана)
+print(f"[Число цивилизаций] Медиана: {median_N:.1f}")
+print(f"[Вероятность контакта] Медиана: {median_p:.6f}")
+print(f"Общая вероятность контакта с хотя бы одной цивилизацией: {p_total * 100:.2f}%")</code></pre>
+    </div>
+    
+    <div class="output">
+        <strong>Примерный вывод кода:</strong>
         
-        // Обновление значений параметров при движении ползунков
-        document.querySelectorAll('input[type="range"]').forEach(slider => {
-            slider.addEventListener('input', updateSliderValue);
-        });
+[Число цивилизаций] Медиана: X.X
+[Вероятность контакта] Медиана: 0.XXXXXX
+Общая вероятность контакта с хотя бы одной цивилизацией: XX.XX%
         
-        function updateSliderValue(e) {
-            const id = e.target.id;
-            if (id.includes('_min') || id.includes('_max')) {
-                const param = id.split('_')[0];
-                const minVal = parseFloat(document.getElementById(`${param}_min`).value);
-                const maxVal = parseFloat(document.getElementById(`${param}_max`).value);
-                
-                // Убедимся, что min <= max
-                if (id.includes('_min') && minVal > maxVal) {
-                    document.getElementById(`${param}_max`).value = minVal;
-                } else if (id.includes('_max') && maxVal < minVal) {
-                    document.getElementById(`${param}_min`).value = maxVal;
-                }
-                
-                document.getElementById(`${param}_value`).textContent = 
-                    `${parseFloat(document.getElementById(`${param}_min`).value).toFixed(2)} - ${parseFloat(document.getElementById(`${param}_max`).value).toFixed(2)}`;
-            } else {
-                const value = parseFloat(e.target.value);
-                document.getElementById(`${id}_value`).textContent = value.toLocaleString();
-            }
-        }
-        
-        // Функция симуляции
-        function simulateContact(params, samples=10000) {
-            const N_civ = [];
-            const p_contact = [];
-            const galaxy_radius = 50000;  // Радиус Галактики в световых годах
-            
-            for (let i = 0; i < samples; i++) {
-                const R = randomUniform(params.R_star[0], params.R_star[1]);
-                const fp = randomUniform(params.f_p[0], params.f_p[1]);
-                const ne = randomUniform(params.n_e[0], params.n_e[1]);
-                const fl = randomUniform(params.f_l[0], params.f_l[1]);
-                const fi = randomUniform(params.f_i[0], params.f_i[1]);
-                const fc = randomUniform(params.f_c[0], params.f_c[1]);
-                const L = randomUniform(params.L[0], params.L[1]);
-                const f_detect = randomUniform(params.f_detect[0], params.f_detect[1]);
-                
-                const N = R * fp * ne * fl * fi * fc * L;
-                N_civ.push(N);
-                
-                const active_now = (Math.random() < L / params.T_galaxy);
-                const distance = randomUniform(0, galaxy_radius);
-                const distance_factor = Math.exp(-distance / galaxy_radius);
-                const p = active_now ? f_detect * distance_factor : 0;
-                p_contact.push(p);
-            }
-            
-            return { N_civ, p_contact };
-        }
-        
-        function randomUniform(min, max) {
-            return min + Math.random() * (max - min);
-        }
-        
-        // Функция для создания bins гистограммы
-        function createHistogramData(data, bins=20) {
-            const min = Math.min(...data);
-            const max = Math.max(...data);
-            const step = (max - min) / bins;
-            
-            const histogram = new Array(bins).fill(0);
-            const labels = [];
-            
-            for (let i = 0; i < bins; i++) {
-                const binStart = min + i * step;
-                const binEnd = binStart + step;
-                labels.push(`${binStart.toFixed(2)}-${binEnd.toFixed(2)}`);
-                
-                histogram[i] = data.filter(x => x >= binStart && x < binEnd).length;
-            }
-            
-            return { bins: histogram, labels };
-        }
-        
-        // Функция обновления графиков
-        function updateCharts() {
-            const params = {
-                R_star: [
-                    parseFloat(document.getElementById('R_star_min').value),
-                    parseFloat(document.getElementById('R_star_max').value)
-                ],
-                f_p: [
-                    parseFloat(document.getElementById('f_p_min').value),
-                    parseFloat(document.getElementById('f_p_max').value)
-                ],
-                n_e: [
-                    parseFloat(document.getElementById('n_e_min').value),
-                    parseFloat(document.getElementById('n_e_max').value)
-                ],
-                f_l: [
-                    parseFloat(document.getElementById('f_l_min').value),
-                    parseFloat(document.getElementById('f_l_max').value)
-                ],
-                f_i: [
-                    parseFloat(document.getElementById('f_i_min').value),
-                    parseFloat(document.getElementById('f_i_max').value)
-                ],
-                f_c: [
-                    parseFloat(document.getElementById('f_c_min').value),
-                    parseFloat(document.getElementById('f_c_max').value)
-                ],
-                L: [
-                    parseFloat(document.getElementById('L_min').value),
-                    parseFloat(document.getElementById('L_max').value)
-                ],
-                f_detect: [
-                    parseFloat(document.getElementById('f_detect_min').value),
-                    parseFloat(document.getElementById('f_detect_max').value)
-                ],
-                T_galaxy: parseFloat(document.getElementById('T_galaxy').value)
-            };
-            
-            const { N_civ, p_contact } = simulateContact(params);
-            
-            // Создаем данные для гистограмм
-            const civHist = createHistogramData(N_civ);
-            const contactHist = createHistogramData(p_contact.filter(p => p > 0));
-            
-            // Обновление данных графиков
-            civChart.data.labels = civHist.labels;
-            civChart.data.datasets[0].data = civHist.bins;
-            
-            contactChart.data.labels = contactHist.labels;
-            contactChart.data.datasets[0].data = contactHist.bins;
-            
-            // Расчет статистики
-            const median_N = calculateMedian(N_civ);
-            const median_p = calculateMedian(p_contact.filter(p => p > 0));
-            const p_total = calculateTotalProbability(p_contact);
-            
-            // Обновление результатов
-            document.getElementById('median_N').textContent = median_N.toFixed(1);
-            document.getElementById('median_p').textContent = median_p.toFixed(6);
-            document.getElementById('p_total').textContent = `${(p_total * 100).toFixed(2)}%`;
-            
-            // Обновление графиков
-            civChart.update();
-            contactChart.update();
-        }
-        
-        function calculateMedian(arr) {
-            if (arr.length === 0) return 0;
-            
-            const sorted = [...arr].sort((a, b) => a - b);
-            const middle = Math.floor(sorted.length / 2);
-            
-            if (sorted.length % 2 === 0) {
-                return (sorted[middle - 1] + sorted[middle]) / 2;
-            } else {
-                return sorted[middle];
-            }
-        }
-        
-        function calculateTotalProbability(p_contact) {
-            if (p_contact.length === 0) return 0;
-            
-            let product = 1;
-            for (const p of p_contact) {
-                product *= (1 - p);
-            }
-            return 1 - product;
-        }
-        
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', () => {
-            // Обновляем все значения ползунков
-            document.querySelectorAll('input[type="range"]').forEach(slider => {
-                const event = { target: slider };
-                updateSliderValue(event);
-            });
-            
-            // Первый расчет
-            updateCharts();
-            
-            // Обработчик кнопки
-            document.getElementById('updateBtn').addEventListener('click', updateCharts);
-        });
-    </script>
+(а также два графика гистограммы)
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
 </body>
 </html>
