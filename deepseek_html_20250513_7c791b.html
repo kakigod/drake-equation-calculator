@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор уравнения Дрейка</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .output-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        .param-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .value-display {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+        .info-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Калькулятор уравнения Дрейка</h1>
+    <p>Оцените количество разумных цивилизаций в нашей галактике</p>
+    
+    <div class="container">
+        <div class="input-section">
+            <h2>Параметры уравнения</h2>
+            
+            <div class="param-group">
+                <label for="R_star">R* - Скорость звёздообразования (звёзд/год)</label>
+                <input type="range" id="R_star" min="1" max="10" step="0.1" value="3">
+                <div class="value-display">
+                    <span>1</span>
+                    <span id="R_star_value">3</span>
+                    <span>10</span>
+                </div>
+                <div class="info-text">Сколько новых звёзд образуется в год в нашей галактике</div>
+            </div>
+            
+            <div class="param-group">
+                <label for="f_p">f<sub>p</sub> - Доля звёзд с планетами</label>
+                <input type="range" id="f_p" min="0" max="1" step="0.01" value="0.9">
+                <div class="value-display">
+                    <span>0</span>
+                    <span id="f_p_value">0.9</span>
+                    <span>1</span>
+                </div>
+                <div class="info-text">Какая часть звёзд имеет планетные системы</div>
+            </div>
+            
+            <div class="param-group">
+                <label for="n_e">n<sub>e</sub> - Планеты в зоне жизни на звезду</label>
+                <input type="range" id="n_e" min="0" max="2" step="0.1" value="0.5">
+                <div class="value-display">
+                    <span>0</span>
+                    <span id="n_e_value">0.5</span>
+                    <span>2</span>
+                </div>
+                <div class="info-text">Среднее число планет в обитаемой зоне у звезды</div>
+            </div>
+            
+            <div class="param-group">
+                <label for="f_l">f<sub>l</sub> - Вероятность возникновения жизни</label>
+                <input type="range" id="f_l" min="0" max="1" step="0.01" value="0.5">
+                <div class="value-display">
+                    <span>0</span>
+                    <span id="f_l_value">0.5</span>
+                    <span>1</span>
+                </div>
+                <div class="info-text">На скольких пригодных планетах действительно возникает жизнь</div>
+            </div>
+            
+            <div class="param-group">
+                <label for="f_i">f<sub>i</sub> - Вероятность развития разума</label>
+                <input type="range" id="f_i" min="0" max="1" step="0.01" value="0.2">
+                <div class="value-display">
+                    <span>0</span>
+                    <span id="f_i_value">0.2</span>
+                    <span>1</span>
+                </div>
+                <div class="info-text">Как часто жизнь развивается до разумной</div>
+            </div>
+            
+            <div class="param-group">
+                <label for="f_c">f<sub>c</sub> - Вероятность развития технологий</label>
+                <input type="range" id="f_c" min="0" max="1" step="0.01" value="0.5">
+                <div class="value-display">
+                    <span>0</span>
+                    <span id="f_c_value">0.5</span>
+                    <span>1</span>
+                </div>
+                <div class="info-text">Как часто разумная жизнь развивает технологии связи</div>
+            </div>
+            
+            <div class="param-group">
+                <label for="L">L - Время жизни цивилизации (лет)</label>
+                <input type="range" id="L" min="100" max="1000000" step="100" value="1000">
+                <div class="value-display">
+                    <span>100</span>
+                    <span id="L_value">1000</span>
+                    <span>1,000,000</span>
+                </div>
+                <div class="info-text">Сколько в среднем существует технологическая цивилизация</div>
+            </div>
+            
+            <button id="calculate-btn">Рассчитать</button>
+        </div>
+        
+        <div class="output-section">
+            <div class="result-box">
+                <h2>Результаты</h2>
+                <p><strong>Число цивилизаций (N):</strong> <span id="result-N">-</span></p>
+                <p><strong>Вероятность контакта:</strong> <span id="result-p">-</span></p>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="results-chart"></canvas>
+            </div>
+            
+            <div class="info-text">
+                <h3>Уравнение Дрейка:</h3>
+                <p>N = R* × f<sub>p</sub> × n<sub>e</sub> × f<sub>l</sub> × f<sub>i</sub> × f<sub>c</sub> × L</p>
+                <p>Где N - число цивилизаций в нашей галактике, с которыми возможен контакт</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Обновление отображаемых значений при движении ползунков
+        document.querySelectorAll('input[type="range"]').forEach(input => {
+            const valueSpan = document.getElementById(`${input.id}_value`);
+            input.addEventListener('input', () => {
+                valueSpan.textContent = input.value;
+            });
+        });
+
+        // Инициализация графика
+        const ctx = document.getElementById('results-chart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Число цивилизаций', 'Вероятность контакта'],
+                datasets: [{
+                    label: 'Результаты',
+                    backgroundColor: ['#3498db', '#e74c3c'],
+                    data: [0, 0]
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Функция расчета
+        document.getElementById('calculate-btn').addEventListener('click', () => {
+            // Получаем значения параметров
+            const R_star = parseFloat(document.getElementById('R_star').value);
+            const f_p = parseFloat(document.getElementById('f_p').value);
+            const n_e = parseFloat(document.getElementById('n_e').value);
+            const f_l = parseFloat(document.getElementById('f_l').value);
+            const f_i = parseFloat(document.getElementById('f_i').value);
+            const f_c = parseFloat(document.getElementById('f_c').value);
+            const L = parseFloat(document.getElementById('L').value);
+            
+            // Вычисляем уравнение Дрейка
+            const N = R_star * f_p * n_e * f_l * f_i * f_c * L;
+            
+            // Для вероятности контакта используем упрощенную модель
+            const galaxy_radius = 50000; // световых лет
+            const T_galaxy = 1e5; // лет наблюдения
+            const f_detect = 0.1; // вероятность обнаружения сигнала
+            
+            // Моделируем вероятность контакта
+            const active_now = (Math.random() < L / T_galaxy);
+            const distance = Math.random() * galaxy_radius;
+            const distance_factor = Math.exp(-distance / galaxy_radius);
+            const p_contact = active_now ? f_detect * distance_factor : 0;
+            
+            // Общая вероятность контакта (упрощенно)
+            const p_total = 1 - Math.pow(1 - p_contact, N);
+            
+            // Отображаем результаты
+            document.getElementById('result-N').textContent = N.toFixed(2);
+            document.getElementById('result-p').textContent = `${(p_total * 100).toFixed(2)}%`;
+            
+            // Обновляем график
+            chart.data.datasets[0].data = [N, p_total * 100];
+            chart.update();
+        });
+    </script>
+</body>
+</html>
