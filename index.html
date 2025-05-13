@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Интерактивное уравнение Дрейка</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/numpy-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-histogram@latest/dist/chartjs-chart-histogram.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,6 +23,7 @@
         .chart-container {
             flex: 1;
             min-width: 500px;
+            height: 400px;
         }
         .controls {
             flex: 1;
@@ -143,7 +144,7 @@
         
         <div class="param-control">
             <label for="T_galaxy">T<sub>galaxy</sub> - Время наблюдения (лет)</label>
-            <input type="range" id="T_galaxy" min="1000" max="1e6" step="1000" value="1e5">
+            <input type="range" id="T_galaxy" min="1000" max="1000000" step="1000" value="100000">
             <div class="param-value">Значение: <span id="T_galaxy_value">100,000</span></div>
         </div>
         
@@ -163,36 +164,84 @@
         const contactCtx = document.getElementById('contactChart').getContext('2d');
         
         let civChart = new Chart(civCtx, {
-            type: 'histogram',
-            data: { datasets: [{
-                label: 'Число разумных цивилизаций (N)',
-                data: [],
-                backgroundColor: 'rgba(135, 206, 235, 0.7)',
-                borderColor: 'rgba(0, 0, 0, 1)',
-                borderWidth: 1
-            }] },
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Число разумных цивилизаций (N)',
+                    data: [],
+                    backgroundColor: 'rgba(135, 206, 235, 0.7)',
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    borderWidth: 1
+                }]
+            },
             options: {
-                scales: { y: { beginAtZero: true } },
+                responsive: true,
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Частота'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Число цивилизаций'
+                        }
+                    }
+                },
                 plugins: {
-                    title: { display: true, text: 'Распределение оценок уравнения Дрейка' },
+                    title: { 
+                        display: true, 
+                        text: 'Распределение оценок уравнения Дрейка',
+                        font: {
+                            size: 16
+                        }
+                    },
                     legend: { display: false }
                 }
             }
         });
         
         let contactChart = new Chart(contactCtx, {
-            type: 'histogram',
-            data: { datasets: [{
-                label: 'Вероятность контакта с одной цивилизацией',
-                data: [],
-                backgroundColor: 'rgba(250, 128, 114, 0.7)',
-                borderColor: 'rgba(0, 0, 0, 1)',
-                borderWidth: 1
-            }] },
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Вероятность контакта с одной цивилизацией',
+                    data: [],
+                    backgroundColor: 'rgba(250, 128, 114, 0.7)',
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    borderWidth: 1
+                }]
+            },
             options: {
-                scales: { y: { beginAtZero: true } },
+                responsive: true,
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Частота'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Вероятность контакта'
+                        }
+                    }
+                },
                 plugins: {
-                    title: { display: true, text: 'Вероятность обнаружения сигнатуры' },
+                    title: { 
+                        display: true, 
+                        text: 'Вероятность обнаружения сигнатуры',
+                        font: {
+                            size: 16
+                        }
+                    },
                     legend: { display: false }
                 }
             }
@@ -258,6 +307,26 @@
             return min + Math.random() * (max - min);
         }
         
+        // Функция для создания bins гистограммы
+        function createHistogramData(data, bins=20) {
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const step = (max - min) / bins;
+            
+            const histogram = new Array(bins).fill(0);
+            const labels = [];
+            
+            for (let i = 0; i < bins; i++) {
+                const binStart = min + i * step;
+                const binEnd = binStart + step;
+                labels.push(`${binStart.toFixed(2)}-${binEnd.toFixed(2)}`);
+                
+                histogram[i] = data.filter(x => x >= binStart && x < binEnd).length;
+            }
+            
+            return { bins: histogram, labels };
+        }
+        
         // Функция обновления графиков
         function updateCharts() {
             const params = {
@@ -298,13 +367,20 @@
             
             const { N_civ, p_contact } = simulateContact(params);
             
+            // Создаем данные для гистограмм
+            const civHist = createHistogramData(N_civ);
+            const contactHist = createHistogramData(p_contact.filter(p => p > 0));
+            
             // Обновление данных графиков
-            civChart.data.datasets[0].data = N_civ;
-            contactChart.data.datasets[0].data = p_contact;
+            civChart.data.labels = civHist.labels;
+            civChart.data.datasets[0].data = civHist.bins;
+            
+            contactChart.data.labels = contactHist.labels;
+            contactChart.data.datasets[0].data = contactHist.bins;
             
             // Расчет статистики
             const median_N = calculateMedian(N_civ);
-            const median_p = calculateMedian(p_contact);
+            const median_p = calculateMedian(p_contact.filter(p => p > 0));
             const p_total = calculateTotalProbability(p_contact);
             
             // Обновление результатов
@@ -318,6 +394,8 @@
         }
         
         function calculateMedian(arr) {
+            if (arr.length === 0) return 0;
+            
             const sorted = [...arr].sort((a, b) => a - b);
             const middle = Math.floor(sorted.length / 2);
             
@@ -329,6 +407,8 @@
         }
         
         function calculateTotalProbability(p_contact) {
+            if (p_contact.length === 0) return 0;
+            
             let product = 1;
             for (const p of p_contact) {
                 product *= (1 - p);
